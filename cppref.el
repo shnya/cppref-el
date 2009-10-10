@@ -1,7 +1,7 @@
 ;; Install
 ;;
 ;; (require 'cppref-mode)
-;; (setq cppref-docroot "/home/share/doc/cppref")
+;; (setq cppref-docroot "/home/masa/root/share/perl/5.10.0/auto/share/dist/cppref")
 ;; (add-hook 'c++-mode-hook
 ;; 	  #'(lambda ()	      
 ;;	      (define-key c++-mode-map "\M-h" 'cppref)))
@@ -11,8 +11,10 @@
   (require 'w3m-load))
 
 (defvar cppref-docroot nil)
+(defvar cppref-docdir-list '())
+(defvar cppref-index-alist '())
+
 (defvar cppref-mode-map nil)
-(defvar cppref-index-list '())
 (unless cppref-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "n" 'next-line)
@@ -29,27 +31,25 @@
   (setq mode-name "*cppref*")
   (run-hooks 'cppref-mode-hook))
 
-(defun cppref-get-output (path)
-  (shell-command-to-string (concat cppref-command " " path)))
-
 (defun cppref-set-select-property (begin end property)
   (put-text-property begin 
 		     end 
 		     'path
 		     property))
 
-(defun cppref-extract-func (str)
-  (setq str (substring str (+ 1 (length cppref-docroot))))
-  (setq str (replace-regexp-in-string "\\.html" "" str))
-  (let ((fields (split-string str "/"))
-	(flag t))
-    (concat 
-     " - "
-     (mapconcat 
-      (lambda (factor)
-	(concat 
-	 (if flag (progn (setq flag nil) "") " >> ")
-	 factor)) fields ""))))
+(defun cppref-extract-func (pair)
+  (let ((str ""))
+    (setq str (substring (cdr pair) (+ 1 (length (car pair)))))
+    (setq str (replace-regexp-in-string "\\.html" "" str))
+    (let ((fields (split-string str "/"))
+	  (flag t))
+      (concat 
+       " - "
+       (mapconcat 
+	(lambda (factor)
+	  (concat 
+	   (if flag (progn (setq flag nil) "") " >> ")
+	   factor)) fields "")))))
 
 
 (defun cppref-select-write-buf (found)
@@ -58,7 +58,7 @@
 	  (let ((begin (point))
 		(output (cppref-extract-func choice)))
 	    (insert output "\n")
-	    (cppref-set-select-property begin (point) choice)))
+	    (cppref-set-select-property begin (point) (cdr choice))))
 	found))
 
 (defun cppref-select-buf (found)
@@ -103,21 +103,32 @@
 	 (funcall func path))))
    (directory-files dir)))
 
+(defun cppref-add-docdir-list (dir)
+  (push dir cppref-docdir-list))
+
 (defun cppref-make-index ()
-  (unless (cppref-get-docroot)
-    (cppref-dir-walker 
-     cppref-docroot
-     (lambda (path)
-       (push path cppref-index-list)))))
+  (cppref-get-docroot)
+  (cppref-add-docdir-list cppref-docroot)
+  (mapc 
+   (lambda (docroot)
+     (let ((docroot-index nil))
+       (cppref-dir-walker 
+	docroot
+	(lambda (path)
+	  (push path docroot-index)))
+       (push (cons docroot docroot-index) cppref-index-alist)))
+   cppref-docdir-list))
 
 (defun cppref-search-func (func-name)
-  (when (null cppref-index-list) (cppref-make-index))
+  (when (null cppref-index-alist) (cppref-make-index))
   (let (found '())
-    (mapc
-     (lambda (path)
-       (when (string-match func-name path)
-	 (push path found)))
-     cppref-index-list)
+    (mapc (lambda (docroot)
+	    (mapc
+	     (lambda (path)
+	       (when (string-match func-name path)
+		 (push (cons (car docroot) path) found)))
+	     (cdr docroot)))
+	  cppref-index-alist)
     found))
 
 (defun cppref-thing-at-point ()
@@ -134,7 +145,7 @@
 	 (found (cppref-search-func func-name)))
     (cond ((null found) (princ "not found"))
 	  ((< 1 (length found)) (cppref-select-buf found))
-	  (t (cppref-w3m-open (car found))))))
+	  (t (cppref-w3m-open (cdr (car found)))))))
 
 
 (provide 'cppref)
