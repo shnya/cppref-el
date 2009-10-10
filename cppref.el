@@ -88,7 +88,6 @@
   (let ((buffer (current-buffer)))
     (unless (string= (buffer-name buffer) "*cppref*")
       (let ((new-buffer) (get-buffer-create "*cppref*"))
-	(print (buffer-name buffer))
 	(pop-to-buffer new-buffer)))
     (w3m-find-file path)))
 
