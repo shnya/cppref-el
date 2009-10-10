@@ -1,7 +1,7 @@
 ;; Install
 ;;
 ;; (require 'cppref-mode)
-;; (setq cppref-docroot "/home/masa/root/share/perl/5.10.0/auto/share/dist/cppref")
+;; (setq cppref-docroot "/usr/share/doc/cppref")
 ;; (add-hook 'c++-mode-hook
 ;; 	  #'(lambda ()	      
 ;;	      (define-key c++-mode-map "\M-h" 'cppref)))
