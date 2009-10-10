@@ -1,9 +1,10 @@
 ;; Install
 ;;
 ;; (require 'cppref-mode)
-;; (setq cppref-docroot "/home/masa/root/share/perl/5.10.0/auto/share/dist/cppref")
 ;; (add-hook 'c++-mode-hook
 ;; 	  #'(lambda ()	      
+;;            (setq cppref-docroot "/usr/share/doc/cppref")
+;;            (cppref-add-docdir-list "/usr/share/doc/libboost-doc/HTML/doc/html")
 ;;	      (define-key c++-mode-map "\M-h" 'cppref)))
 ;;
 
