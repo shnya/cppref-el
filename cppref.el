@@ -86,9 +86,11 @@
 
 (defun cppref-w3m-open (path)
   (let ((buffer (current-buffer)))
-    (unless (string= (buffer-name buffer) "*cppref*")
-      (let ((new-buffer) (get-buffer-create "*cppref*"))
-	(pop-to-buffer new-buffer)))
+    (if (string= (buffer-name buffer) "*cppref*")
+	(kill-buffer buffer)
+      (progn 
+	(let ((new-buffer) (get-buffer-create "*cppref*"))
+	  (pop-to-buffer new-buffer))))
     (w3m-find-file path)))
 
 (defun cppref-get-docroot ()
