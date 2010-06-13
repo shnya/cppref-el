@@ -137,8 +137,8 @@
     found))
 
 (defun cppref-thing-at-point ()
-  (let* ((begin (save-excursion (skip-chars-backward "a-zA-Z0-9_:") (point)))
-	 (end (save-excursion (skip-chars-forward "a-zA-z0-9_:") (point)))
+  (let* ((begin (save-excursion (skip-chars-backward "a-zA-Z0-9_") (point)))
+	 (end (save-excursion (skip-chars-forward "a-zA-z0-9_") (point)))
 	 (func-name (buffer-substring begin end)))
     (when (string= func-name "") 
       (setq func-name (read-from-minibuffer "cppref function-name: ")))
@@ -152,5 +152,6 @@
 	  ((< 1 (length found)) (cppref-select-buf found))
 	  (t (cppref-w3m-open (cdr (car found)))))))
 
-
 (provide 'cppref)
+
+
